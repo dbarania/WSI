@@ -28,6 +28,7 @@ def ackley_function_gradient(x,y):
 
 def gradient_descent(func:Callable[[float,float],float],grad_func:Callable[[float,float],float],start_pos:Tuple[float,float],steps:int,beta:float)->list[list[tuple,tuple]]:
     position = start_pos
+    func_value = [(0,func(*position))]
     trace = [position]
     def calculate_new_position():
         grad_value = grad_func(position[0],position[1])
@@ -36,22 +37,41 @@ def gradient_descent(func:Callable[[float,float],float],grad_func:Callable[[floa
         return (e1,e2)
     for i in range(1,steps+1):
         position=calculate_new_position()
+        func_value.append((i,func(*position)))
         trace.append(position)
-    return trace
+    return trace,func_value
 
-def plot_function(func:Callable[[float,float],float], trace:list):
+def plot_function(func:Callable[[float,float],float], trace=list()):
     X = np.arange(-5, 5, 0.1)
     Y = np.arange(-5,5, 0.1)
     X, Y = np.meshgrid(X, Y)
     Z = func(X,Y)
+    plt.contourf(X,Y,Z,100)
+    plt.colorbar()
+    plt.title(func.__name__.replace("_"," "))
+    if len(trace):
+        trace_x,trace_y = list(zip(*trace))
+        plt.scatter(trace_x,trace_y,color="red")
+    plt.show()
 
-X = np.arange(-5, 5, 0.1)
-Y = np.arange(-5,5, 0.1)
-X, Y = np.meshgrid(X, Y)
-Z = himmelblau_function(X,Y)
-r = gradient_descent(himmelblau_function,himmelblau_funnction_gradient,(0,0),100,0.01)
-a = list(zip(*r))
-plt.contourf(X,Y,Z,200,cmap="coolwarm")
-plt.plot(a[0],a[1],color="red")
-plt.colorbar()
-plt.show()
+def print_values(trace,values):
+    trace_x,trace_y = list(zip(*trace))
+    steps,value = list(zip(*values))
+    for i in range(len(steps)):
+        print(f"Step {steps[i]:<3}\t Current position ({trace_x[i]:.4e}\t {trace_y[i]:.4e})\t value at position {value[i]:<.4e}.")
+
+def plot_values(values):
+    steps,value = list(zip(*values))
+    plt.plot(steps,value)
+    plt.show()
+
+
+
+
+
+
+# t,v = gradient_descent(himmelblau_function,himmelblau_funnction_gradient,(0,0),1000,0.01)
+
+# # plot_function(himmelblau_function,t)
+# # plot_value(v)
+# print_values(t,v)
