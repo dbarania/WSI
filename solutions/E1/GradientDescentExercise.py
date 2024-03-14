@@ -42,17 +42,20 @@ def gradient_descent(func:Callable[[float,float],float],grad_func:Callable[[floa
     return trace,func_value
 
 def plot_function(func:Callable[[float,float],float], trace=list()):
-    X = np.arange(-5, 5, 0.1)
-    Y = np.arange(-5,5, 0.1)
+    X = np.arange(-4.5, 4.5, 0.1)
+    Y = np.arange(-4.5, 4.5, 0.1)
     X, Y = np.meshgrid(X, Y)
     Z = func(X,Y)
-    plt.contourf(X,Y,Z,100)
+    plt.contourf(X,Y,Z,90,cmap="jet")
+    plt.xlabel("x")
+    plt.ylabel("y")
     plt.colorbar()
     plt.title(func.__name__.replace("_"," "))
     if len(trace):
         trace_x,trace_y = list(zip(*trace))
-        plt.scatter(trace_x,trace_y,color="red")
+        plt.plot(trace_x,trace_y,color="red")
     plt.show()
+
 
 def print_values(trace,values):
     trace_x,trace_y = list(zip(*trace))
@@ -63,15 +66,8 @@ def print_values(trace,values):
 def plot_values(values):
     steps,value = list(zip(*values))
     plt.plot(steps,value)
-    plt.show()
+    plt.xlabel("step")
+    plt.ylabel("function value")
+    plt.grid()
+    plt.show()     
 
-
-
-
-
-
-# t,v = gradient_descent(himmelblau_function,himmelblau_funnction_gradient,(0,0),1000,0.01)
-
-# # plot_function(himmelblau_function,t)
-# # plot_value(v)
-# print_values(t,v)
