@@ -11,11 +11,11 @@ class TicTacToe:
     PLAYER = -1
     COMPUTER = 1
 
-    def __init__(self, filepath) -> None:
+    def __init__(self, dificulty:int) -> None:
         self.board = np.zeros((3, 3))
         self.move_counter = 0
-        self.file = open(filepath, "+a")
         self.who_is_moving = None
+        self.dificulty = dificulty
 
     @staticmethod
     def str_cell(value):
@@ -49,7 +49,7 @@ class TicTacToe:
                 print("Invalid input try again")
                 continue
 
-    def computer_move(self):
+    def computer_move(self,algorithm = MiniMaxTicTacToe,debug = False):
         moves = (generate_next_moves(self.board))
         random.shuffle(moves)
         if len(moves):
@@ -59,39 +59,48 @@ class TicTacToe:
             for move in moves:
                 new_board = copy.copy(self.board)
                 new_board[*move] = 1
-                result = AlfaBeta(new_board, 8, False)
+
+                result = algorithm(new_board, self.dificulty, False)
                 if result > score:
                     best_move = move
                     score = result
                 d[move] = result
             self.board[*best_move] = self.who_is_moving
+            if debug:
+                print(d)
 
     def update_move(self):
         if self.who_is_moving == self.COMPUTER:
             self.who_is_moving = self.PLAYER
         else:
             self.who_is_moving = self.COMPUTER
+    def sum_game(self, result):
+        if -1<result<1:
+            print("The game enden as a draw")
+        elif result<-1:
+            print("The X has won!")
+        else:
+            print("The O has won!")
 
     def game(self):
         if not self.who_is_moving:
             self.who_is_moving = random.choice([self.PLAYER, self.COMPUTER])
-            # temp
-            # self.who_is_moving = self.COMPUTER
-        state_of_game = True
-        while state_of_game:
+        state_of_game = False
+        print(self)
+        print("\n")
+        while not state_of_game:
             self.move_counter += 1
-            print(self)
-            print("____________________")
             match self.who_is_moving:
                 case self.PLAYER:
                     self.player_move()
                 case self.COMPUTER:
                     self.computer_move()
-            state_of_game = not check_board(self.board, self.who_is_moving)
+            state_of_game = check_board(self.board, self.who_is_moving)
+            print(self)
+            print("\n")
             self.update_move()
+        self.sum_game(state_of_game)
 
-
-if __name__ == "__main__":  #
-    g = TicTacToe("t.log")
-    # g.board = temp_board
-    g.game()
+if __name__=="__main__":
+    game = TicTacToe(6)
+    game.game()

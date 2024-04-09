@@ -2,7 +2,6 @@ import numpy as np
 from itertools import product
 import random
 def check_board(board:np.ndarray,who_is_moving:int):
-    # Check!!!
     result = who_is_moving*10
     if np.count_nonzero(board)==9:
         return 0.01*who_is_moving
@@ -17,9 +16,6 @@ def check_board(board:np.ndarray,who_is_moving:int):
     elif (np.fliplr(board).diagonal()==who_is_moving).sum()==3:
         return result
     return 0
-
-def h():
-    pass
 
 
 def generate_next_moves(board:np.ndarray):
