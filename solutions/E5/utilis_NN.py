@@ -1,3 +1,4 @@
+import numpy as np
 def sigmoid(Z):
     """
     Argumenty:
@@ -7,6 +8,8 @@ def sigmoid(Z):
     A -- wynik funkcji sigmoid(z), taki sam kształt jak Z
     cache -- zwraca również Z, przydatne podczas propagacji wstecznej
     """
+    A = np.exp(Z)/(1+np.exp(Z))
+    cache = Z
     return A, cache
 
 
@@ -19,6 +22,8 @@ def relu(Z):
     A -- Parametr po aktywacji, ten sam kształt co Z
     cache -- słownik pythona zawierający "A"; przechowywany do efektywnego obliczania propagacji wstecznej
     """
+    A = (Z+np.abs(Z))/2
+    cache = A #???
     return A, cache
 
 
