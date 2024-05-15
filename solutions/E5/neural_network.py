@@ -34,7 +34,11 @@ class NeuralNetwork:
     @staticmethod
     def relu(Z: np.ndarray):
         return (Z + np.abs(Z)) / 2
-
+    
+    @staticmethod
+    def relu_derivarive(Z:np.ndarray):
+        return 0 if Z < 0 else 1
+    
     @staticmethod
     def mse(y_pred: np.ndarray, y_data: np.ndarray):
         return np.mean(np.power((y_data - y_pred), 2))
@@ -58,14 +62,10 @@ class NeuralNetwork:
         A = X
         layers_output_list.append(A)
         for i in range(self._num_layers):
-            # Z = self._weights[i].dot(A)
-            # Y = self.sigmoid(Z)
-            # A = np.append(Y,1)
             Z = np.dot(self._weights[i], A) + self._bias[i]
             Y = self.sigmoid(Z)
             A = Y
             layers_output_list.append(A)
-        # layers_output_list[-1] = np.delete(layers_output_list[-1],-1,0)
         return layers_output_list
 
     def backward_propagation(self, layers_output_list: list[np.ndarray], Y: np.ndarray):
@@ -76,13 +76,6 @@ class NeuralNetwork:
         db = [0] * self._num_layers
 
         for i in reversed(range(self._num_layers)):
-            # dCdw = np.multiply(dCdY,dydz_old).dot(layers_output_list[i])
-            # dCdw = np.multiply(dCdY,dydz_old).dot(layers_output_list[i]) if np.multiply(dCdY,dydz_old).shape!=np.zeros((1)).shape \
-            #     else np.multiply(np.multiply(dCdY,dydz_old),(layers_output_list[i]))
-            # dCdY = self._weights[i].transpose().dot(np.multiply(dCdY,dydz_old))
-            # dCdw = np.outer(np.multiply(dCdY.transpose()[0],dydz_old),layers_output_list[i])
-            # dCdX = np.multiply(self._weights[i], np.multiply(dCdY.transpose(),dydz_old))
-            # dCdY = np.delete(dCdX,-1)
             dcdw = np.outer((dcdy * dydz), layers_output_list[i].T)
             dcdb = dcdy
             dcdx = np.dot(self._weights[i].T, dcdy * dydz)
@@ -110,7 +103,8 @@ class NeuralNetwork:
 
     def train_model(self, train_data_file_handle: h5py.File, iterations: int, learning_rate: float):
         classes, train_data_x, train_data_y = self.load_data(train_data_file_handle)
-        for _ in range(iterations):
+        for i in range(iterations):
+            # print(i)
             grad_dw_sum = None
             grad_db_sum = None
 
@@ -119,8 +113,8 @@ class NeuralNetwork:
                 A = self.forward_propagation(X)
                 dw, db = self.backward_propagation(A, Y)
                 if grad_dw_sum and grad_db_sum:
-                    self._sum_list(grad_dw_sum, dw)
-                    self._sum_list(grad_db_sum, db)
+                    grad_dw_sum=self._sum_list(grad_dw_sum, dw)
+                    grad_db_sum=self._sum_list(grad_db_sum, db)
                 else:
                     grad_dw_sum = dw
                     grad_db_sum = db
@@ -129,8 +123,60 @@ class NeuralNetwork:
             grad_db = [el / train_data_y.size for el in grad_db_sum]
             self.update_parameters(learning_rate, grad_dw, grad_db)
 
+    def predict(self,X):
+        threshold = 0.5
+        output = self.forward_propagation(X)
+        return( 1 if output[-1]>threshold else 0), output
+
     def evaluate_model(self, test_data_file_handle:h5py.File):
-        pass
-with h5py.File("data/train_catvnoncat.h5") as train_file:
-    network = NeuralNetwork([64 * 64 * 3, 10, 1])
-    network.train_model(train_file)
+        classes, test_data_x, test_data_y = self.load_data(test_data_file_handle)
+        correct_predictions = 0
+        cost = 0
+        for X, Y in zip(test_data_x,test_data_y):
+            # print(Y)
+            y_pred, out = self.predict(self._scale_input(X))
+            correct_predictions+=int(y_pred==Y)
+            cost+=self.mse(out,Y)
+        return cost/test_data_y.size, correct_predictions
+
+        
+
+
+iterations = [50,100,500,1000,5000,10000]
+neurons = [3,4,5,6,7,9,15,25]
+learning_rate = [0.01,0.1,0.3,0.5,0.75]
+
+for iter in  iterations:
+    i = iter
+    lr = 0.7
+    neur = 7
+    with h5py.File("data/train_catvnoncat.h5") as train_file:
+        network = NeuralNetwork([64 * 64 * 3, neur, 1])
+        network.train_model(train_file,i,lr)
+        with h5py.File("data/test_catvnoncat.h5") as test_flie:
+            mean_cost, accuracy = network.evaluate_model(test_flie)
+            print(f"{i},{neur},{lr},{mean_cost},{accuracy}")
+
+for n in  neurons:
+    i = 1000
+    lr = 0.7
+    neur = n
+    with h5py.File("data/train_catvnoncat.h5") as train_file:
+        network = NeuralNetwork([64 * 64 * 3, neur, 1])
+        network.train_model(train_file,i,lr)
+        with h5py.File("data/test_catvnoncat.h5") as test_flie:
+            mean_cost, accuracy = network.evaluate_model(test_flie)
+            print(f"{i},{neur},{lr},{mean_cost},{accuracy}")
+
+for rate in  learning_rate:
+    i = 1000
+    lr = rate
+    neur = 7
+    with h5py.File("data/train_catvnoncat.h5") as train_file:
+        network = NeuralNetwork([64 * 64 * 3, neur, 1])
+        network.train_model(train_file,i,lr)
+        with h5py.File("data/test_catvnoncat.h5") as test_flie:
+            mean_cost, accuracy = network.evaluate_model(test_flie)
+            print(f"{i},{neur},{lr},{mean_cost},{accuracy}")
+
+
