@@ -104,7 +104,7 @@ class NeuralNetwork:
     def train_model(self, train_data_file_handle: h5py.File, iterations: int, learning_rate: float):
         classes, train_data_x, train_data_y = self.load_data(train_data_file_handle)
         for i in range(iterations):
-            # print(i)
+            print(i)
             grad_dw_sum = None
             grad_db_sum = None
 
@@ -126,7 +126,7 @@ class NeuralNetwork:
     def predict(self,X):
         threshold = 0.5
         output = self.forward_propagation(X)
-        return( 1 if output[-1]>threshold else 0), output
+        return( 1 if output[-1]>threshold else 0), output[-1]
 
     def evaluate_model(self, test_data_file_handle:h5py.File):
         classes, test_data_x, test_data_y = self.load_data(test_data_file_handle)
@@ -141,42 +141,47 @@ class NeuralNetwork:
 
         
 
+with open('output1.txt', 'w') as file:
 
-iterations = [50,100,500,1000,5000,10000]
-neurons = [3,4,5,6,7,9,15,25]
-learning_rate = [0.01,0.1,0.3,0.5,0.75]
+    iterations = [50,100,500,1000,5000,10000]
+    neurons = [3,4,5,6,7,9,15,25]
+    learning_rate = [0.01,0.1,0.3,0.5,0.75]
+    # print("Checking iterations")
+    # for iter in  iterations:
+    #     i = iter
+    #     lr = 0.7
+    #     neur = 7
+    #     with h5py.File("data/train_catvnoncat.h5") as train_file:
+    #         network = NeuralNetwork([64 * 64 * 3, neur, 1])
+    #         network.train_model(train_file,i,lr)
+    #         with h5py.File("data/test_catvnoncat.h5") as test_flie:
+    #             mean_cost, accuracy = network.evaluate_model(test_flie)
+    #             file.write(f"{i},{neur},{lr},{mean_cost},{accuracy}\n")
 
-for iter in  iterations:
-    i = iter
-    lr = 0.7
-    neur = 7
-    with h5py.File("data/train_catvnoncat.h5") as train_file:
-        network = NeuralNetwork([64 * 64 * 3, neur, 1])
-        network.train_model(train_file,i,lr)
-        with h5py.File("data/test_catvnoncat.h5") as test_flie:
-            mean_cost, accuracy = network.evaluate_model(test_flie)
-            print(f"{i},{neur},{lr},{mean_cost},{accuracy}")
+    print("Checking neurons")
 
-for n in  neurons:
-    i = 1000
-    lr = 0.7
-    neur = n
-    with h5py.File("data/train_catvnoncat.h5") as train_file:
-        network = NeuralNetwork([64 * 64 * 3, neur, 1])
-        network.train_model(train_file,i,lr)
-        with h5py.File("data/test_catvnoncat.h5") as test_flie:
-            mean_cost, accuracy = network.evaluate_model(test_flie)
-            print(f"{i},{neur},{lr},{mean_cost},{accuracy}")
+    for n in  neurons:
+        i = 2000
+        lr = 0.7
+        neur = n
+        with h5py.File("data/train_catvnoncat.h5") as train_file:
+            network = NeuralNetwork([64 * 64 * 3, neur, 1])
+            network.train_model(train_file,i,lr)
+            with h5py.File("data/test_catvnoncat.h5") as test_flie:
+                mean_cost, accuracy = network.evaluate_model(test_flie)
+                file.write(f"{i},{neur},{lr},{mean_cost},{accuracy}\n")
 
-for rate in  learning_rate:
-    i = 1000
-    lr = rate
-    neur = 7
-    with h5py.File("data/train_catvnoncat.h5") as train_file:
-        network = NeuralNetwork([64 * 64 * 3, neur, 1])
-        network.train_model(train_file,i,lr)
-        with h5py.File("data/test_catvnoncat.h5") as test_flie:
-            mean_cost, accuracy = network.evaluate_model(test_flie)
-            print(f"{i},{neur},{lr},{mean_cost},{accuracy}")
+    print("Checking learning rate")
+
+    for rate in  learning_rate:
+        i = 2000
+        lr = rate
+        neur = 7
+        with h5py.File("data/train_catvnoncat.h5") as train_file:
+            network = NeuralNetwork([64 * 64 * 3, neur, 1])
+            network.train_model(train_file,i,lr)
+            with h5py.File("data/test_catvnoncat.h5") as test_flie:
+                mean_cost, accuracy = network.evaluate_model(test_flie)
+                file.write(f"{i},{neur},{lr},{mean_cost},{accuracy}\n")
 
 
